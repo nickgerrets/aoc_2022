@@ -61,7 +61,7 @@ std::vector<std::string>	get_lines(std::ifstream& input)
 		}
 		lines.push_back(result);
 	}
-	//	skip line
+	//	skip line (I feel like theres a better way)
 	std::string s;
 	std::getline(input, s);
 	return (lines);
