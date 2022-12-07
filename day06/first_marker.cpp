@@ -2,26 +2,6 @@
 #include <fstream>
 #include <queue>
 
-//	queue derived class to make queue iterable
-template<typename T, typename Container = std::deque<T>>
-class iterable_queue : public std::queue<T, Container>
-{
-	public:
-	typedef typename Container::iterator iterator;
-	typedef typename Container::const_iterator const_iterator;
-
-	iterator		begin() { return this->c.begin(); }
-	iterator		end() { return this->c.end(); }
-	const_iterator	begin() const { return this->c.begin(); }
-	const_iterator	end() const { return this->c.end(); }
-
-	const T& operator[](unsigned int index) const
-	{
-		// if (index >= this->size()) return (exception);
-		return *(begin() + index);
-	}
-};
-
 //	Checks if all elements in a given (iterable) container type are unique
 template<typename T>
 bool	check_unique(const T& container)
@@ -40,17 +20,17 @@ bool	check_unique(const T& container)
 
 int	find_marker(std::ifstream& stream, size_t marker_size)
 {
-	iterable_queue<char> queue;
+	std::deque<char> deque;
 
 	size_t i = 0;
 	int c;
 	while ((c = (char)stream.get()) != EOF)
 	{
 		i++;
-		if (queue.size() >= marker_size)
-			queue.pop();
-		queue.push((char)c);
-		if (queue.size() == marker_size && check_unique(queue))
+		if (deque.size() >= marker_size)
+			deque.pop_back();
+		deque.push_front((char)c);
+		if (deque.size() == marker_size && check_unique(deque))
 			return (i);
 	}
 	return (i);
