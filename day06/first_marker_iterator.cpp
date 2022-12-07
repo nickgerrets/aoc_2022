@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <set>
 
 template<typename ItInput>
 ItInput	first_not_unique(ItInput begin, ItInput end)
