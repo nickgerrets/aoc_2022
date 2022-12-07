@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 
+//	I know I can use std::pair
 template<typename T>
 struct Pair
 {
