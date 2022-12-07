@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <deque>
+#include <set>
 
 template<typename ItInput>
 ItInput	first_not_unique(ItInput begin, ItInput end)
@@ -18,21 +18,16 @@ ItInput	first_not_unique(ItInput begin, ItInput end)
 
 size_t	find_marker(std::ifstream& stream, size_t marker_size)
 {
-	std::deque<char> deque;
-
-	size_t i = 0;
-	int c;
-	while ((c = (char)stream.get()) != EOF)
+	std::string line;
+	std::getline(stream, line);
+	for (size_t i = marker_size; i <= line.size(); ++i)
 	{
-		i++;
-		if (deque.size() >= marker_size)
-			deque.pop_back();
-		deque.push_front((char)c);
-		if (deque.size() == marker_size && first_not_unique(deque.begin(), deque.end()) == deque.end())
+		if (first_not_unique(line.begin() + i - marker_size, line.begin() + i) == line.begin() + i)
 			return (i);
 	}
 	return (std::string::npos);
 }
+
 
 int	main(int argc, char **argv)
 {
