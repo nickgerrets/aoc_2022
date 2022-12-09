@@ -99,6 +99,8 @@ std::vector<Instruction>	parse_instructions(std::ifstream& stream)
 	return (instructions);
 }
 
+#include <numeric>
+
 // ./program_name <input_file> [snake_length]
 int	main(int argc, char **argv)
 {
@@ -108,14 +110,12 @@ int	main(int argc, char **argv)
 	std::ifstream	file;
 	file.open(argv[1]);
 
-	size_t snake_length = 10;
-	if (argc > 2)
-	{
-		try { snake_length = std::stoul(argv[2]); } catch(...) {}
-	}
-
 	if (!file)
 		return (EXIT_FAILURE);
+
+	size_t snake_length = 10;
+	if (argc > 2)
+		try { snake_length = std::stoul(argv[2]); } catch(...) {}
 
 	std::vector<Instruction> instructions = parse_instructions(file);
 
@@ -130,12 +130,7 @@ int	main(int argc, char **argv)
 		}
 	}
 
-	size_t amount_visited = 0;
-	for (bool v : grid.visited)
-	{
-		if (v)
-			amount_visited++;
-	}
+	size_t amount_visited = std::accumulate(grid.visited.begin(), grid.visited.end(), size_t {0});
 
 	std::cout << "Spaces visited: " << amount_visited << std::endl;
 
