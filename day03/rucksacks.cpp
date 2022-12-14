@@ -6,9 +6,10 @@
 class Rucksack
 {
 	public:
-	std::string sack;
-	std::string	comp1;
-	std::string	comp2;
+	Rucksack(std::string const& sack)
+	:	sack(sack),
+		comp1(sack.substr(0, sack.length() * 0.5)),
+		comp2(sack.substr(sack.length() * 0.5)) {}
 
 	char	get_first_common_item(void)
 	{
@@ -20,14 +21,18 @@ class Rucksack
 		return ('\0');
 	}
 
+	std::string sack;
+
+	private:
+	std::string comp1;
+	std::string comp2;
 };
 
 class Group
 {
 	public:
-	Rucksack	a;
-	Rucksack	b;
-	Rucksack	c;
+	Group(Rucksack a, Rucksack b, Rucksack c)
+	: a(a), b(b), c(c) {}
 
 	char	get_first_common_item(void)
 	{
@@ -39,39 +44,33 @@ class Group
 		}
 		return ('\0');
 	}
+
+	private:
+	Rucksack a;
+	Rucksack b;
+	Rucksack c;
 };
 
-std::vector<Rucksack>	parse_rucksacks(std::ifstream& input)
+std::vector<Rucksack>	parse_rucksacks(std::istream& stream)
 {
-	std::vector<Rucksack>	rucksacks;
+	std::vector<Rucksack> rucksacks;
 
-	while (!input.eof())
-	{
-		std::string	line;
-		std::getline(input, line);
-		if (line.length() == 0)
-			break ;
-		Rucksack r;
-		r.sack = line;
-		r.comp1 = line.substr(0, line.length() * 0.5);
-		r.comp2 = line.substr(line.length() * 0.5, line.length());
-		rucksacks.push_back(r);
-	}
+	for (std::string line; std::getline(stream, line); )
+		rucksacks.emplace_back(line);
 	return (rucksacks);
 }
 
 std::vector<Group>	parse_groups(std::vector<Rucksack>& rucksacks)
 {
-	std::vector<Group>	groups;
-
+	std::vector<Group> groups;
 	size_t	i = 0;
 	while (i + 2 < rucksacks.size())
 	{
-		Group	g;
-		g.a = rucksacks[i];
-		g.b = rucksacks[i + 1];
-		g.c = rucksacks[i + 2];
-		groups.push_back(g);
+		groups.emplace_back(
+			rucksacks[i],
+			rucksacks[i + 1],
+			rucksacks[i + 2]
+		);
 		i += 3;
 	}
 	return (groups);
@@ -83,8 +82,7 @@ int	get_priority(char c)
 		return (0);
 	if (c >= 'a' && c <= 'z')
 		return (c - 'a' + 1);
-	else
-		return (c - 'A' + 27);
+	return (c - 'A' + 27);
 }
 
 int	main(int argc, char **argv)
@@ -92,20 +90,25 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 		return (EXIT_FAILURE);
 
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
+	//	parsing
 	std::vector<Rucksack> rucksacks = parse_rucksacks(file);
 	std::vector<Group> groups = parse_groups(rucksacks);
 
+	//	Part 1
 	int total = 0;
+	for (Rucksack& r : rucksacks)
+		total += get_priority(r.get_first_common_item());
+	std::cout << "Priority total (Part 1): " << total << std::endl;
+
+	//	Part 2
+	total = 0;
 	for (Group& g : groups)
 		total += get_priority(g.get_first_common_item());
-
-	std::cout << "Priority total: " << total << std::endl;
+	std::cout << "Priority total (Part 2): " << total << std::endl;
 
 	return (EXIT_SUCCESS);
 }
