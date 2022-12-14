@@ -1,18 +1,18 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <numeric>
 
-# define SIGN(x) (x > 0) - (x < 0)
+#include "../include/common.h"
 
 struct Point
 {
-	int x = 0;
-	int y = 0;
-
-	Point() {}
+	Point() : x(0), y(0) {}
 	Point(int x, int y) : x(x), y(y) {}
 
-	Point& operator+(Point& rhs)
+	int x, y;
+
+	Point& operator+(Point const& rhs)
 	{
 		x += rhs.x;
 		y += rhs.y;
@@ -35,20 +35,16 @@ class Grid
 {
 	public:
 	Grid(size_t width, size_t height, size_t snake_length)
-	: width(width), height(height)
+	: width(width), height(height), visited(width * height, false)
 	{
-		visited.insert(visited.begin(), width * height, false);
 		Point head(width * 0.5, height * 0.5);
 		tail.insert(tail.begin(), snake_length, head);
 		visited[head.x + head.y * width] = true;
 	}
 
-	size_t width;
-	size_t height;
-	std::vector<bool> visited;
-	std::vector<Point> tail;
+	std::vector<bool> const& get_visited(void) const { return visited; }
 
-	void move(Point to)
+	void move(Point const& to)
 	{
 		std::vector<Point> prev = tail;
 
@@ -67,24 +63,22 @@ class Grid
 	}
 
 	private:
-
-	bool is_too_far(Point& a, Point& b)
+	bool is_too_far(Point& a, Point& b) const
 	{
 		return (a.x < b.x - 1 || a.x > b.x + 1 || a.y < b.y - 1 || a.y > b.y + 1);
 	}
+
+	size_t width;
+	size_t height;
+	std::vector<bool> visited;
+	std::vector<Point> tail;
 };
 
-std::vector<Instruction>	parse_instructions(std::ifstream& stream)
+std::vector<Instruction> parse_instructions(std::istream& stream)
 {
 	std::vector<Instruction> instructions;
-
-	while (!stream.eof())
+	for (std::string line; std::getline(stream, line); )
 	{
-		std::string line;
-		std::getline(stream, line);
-		if (line.length() == 0)
-			break ;
-		Point to;
 		Instruction i;
 		switch (line[0])
 		{
@@ -99,17 +93,13 @@ std::vector<Instruction>	parse_instructions(std::ifstream& stream)
 	return (instructions);
 }
 
-#include <numeric>
-
 // ./program_name <input_file> [snake_length]
 int	main(int argc, char **argv)
 {
 	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
@@ -123,14 +113,14 @@ int	main(int argc, char **argv)
 	Grid grid(1000, 1000, snake_length);
 	for (auto& i : instructions)
 	{
-		// std::cout << "executing instruction: {" << i.amount << ", (" << i.to.x << ',' << i.to.y << ")}" << std::endl;
 		while (i.amount--)
-		{
 			grid.move(i.to);
-		}
 	}
 
-	size_t amount_visited = std::accumulate(grid.visited.begin(), grid.visited.end(), size_t {0});
+	size_t amount_visited = std::accumulate(
+		grid.get_visited().cbegin(),
+		grid.get_visited().cend(),
+		size_t {0});
 
 	std::cout << "Spaces visited: " << amount_visited << std::endl;
 

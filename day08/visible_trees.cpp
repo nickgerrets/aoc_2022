@@ -2,10 +2,14 @@
 #include <fstream>
 
 
-struct Map
+class Map
 {
-	size_t	width = 0;
-	size_t	height = 0;
+	public:
+	Map()
+	: width(0), height(0) {}
+
+	size_t width;
+	size_t height;
 	std::string	data;
 
 	char get(size_t x, size_t y)
@@ -73,7 +77,6 @@ struct Map
 			* count_row(x, -1, y)
 			* count_column(y, 1, x)
 			* count_column(y, -1, x);
-
 		return (score);
 	}
 
@@ -111,16 +114,11 @@ struct Map
 
 };
 
-Map	parse_map(std::ifstream& stream)
+Map parse_map(std::istream& stream)
 {
-	Map	map;
-
-	while (!stream.eof())
+	Map map;
+	for (std::string line; std::getline(stream, line); )
 	{
-		std::string line;
-		std::getline(stream, line);
-		if (line.length() == 0)
-			break ;
 		map.width = line.length();
 		map.height++;
 		map.data.append(line);
@@ -130,16 +128,15 @@ Map	parse_map(std::ifstream& stream)
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
 	Map map = parse_map(file);
+
 	size_t count = 0;
 	int heighest_score = 0;
 	for (size_t x = 0; x < map.width; ++x)
@@ -155,7 +152,6 @@ int	main(int argc, char **argv)
 	}
 
 	std::cout << "Amount visible: " << count << std::endl;
-	
 	std::cout << "Heighest score: " << heighest_score << std::endl;
 
 	return (EXIT_SUCCESS);
