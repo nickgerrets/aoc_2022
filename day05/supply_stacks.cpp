@@ -3,35 +3,36 @@
 #include <vector>
 #include <stack>
 
+#include "../include/common.h"
+
+using namespace aoc;
+
 class Instruction
 {
 	public:
 	Instruction(size_t amount, std::stack<char>& from, std::stack<char>& to)
-		: amount(amount), from(from), to(to) {};
-
-	size_t				amount;
-	std::stack<char>&	from;
-	std::stack<char>&	to;
+	: amount(amount), from(from), to(to) {};
 
 	//	Iterative
-	void	execute_iterative(void)
+	void	execute_iterative(void) const
 	{
-		while (amount--)
+		size_t a = amount;
+		while (a--)
 		{
 			to.push(from.top());
 			from.pop();
 		}
 	}
 
-	void	execute_recursive(void)
+	//	recursive
+	void	execute_recursive(void) const
 	{
 		execute_recursive_impl(1);
 	}
 
 	private:
 
-	//	recursive
-	void	execute_recursive_impl(size_t i)
+	void	execute_recursive_impl(size_t i) const
 	{
 		char c = from.top();
 
@@ -40,19 +41,22 @@ class Instruction
 			execute_recursive_impl(i + 1);
 		to.push(c);
 	}
+
+	size_t				amount;
+	std::stack<char>&	from;
+	std::stack<char>&	to;
 };
 
-std::vector<std::string>	get_lines(std::ifstream& input)
+std::vector<std::string> get_lines(std::istream& stream)
 {
-	std::vector<std::string>	lines;
-
-	while (!input.eof())
+	std::vector<std::string> lines;
+	for (std::string line; std::getline(stream, line); )
 	{
-		std::string line;
-		std::getline(input, line);
-		if (line.length() < 2 || line[1] == '1')
+		if (line.length() == 0)
 			break ;
-		
+		if (line.length() < 2 || line[1] == '1')
+			continue;
+
 		std::string result((line.length() + 1) / 4, ' ');
 		for (size_t i = 0; i < line.length(); ++i)
 		{
@@ -61,18 +65,14 @@ std::vector<std::string>	get_lines(std::ifstream& input)
 		}
 		lines.push_back(result);
 	}
-	//	skip line (I feel like theres a better way)
-	std::string s;
-	std::getline(input, s);
 	return (lines);
 }
 
-std::vector<std::stack<char>>	parse_stacks(std::ifstream& input)
+std::vector<std::stack<char>> parse_stacks(std::istream& stream)
 {
-	std::vector<std::string>	lines;
-	
-	lines = get_lines(input);
-	std::vector<std::stack<char>>	stacks(lines[0].length());
+	std::vector<std::string> lines = get_lines(stream);
+	std::vector<std::stack<char>> stacks(lines[0].length());
+
 	for (size_t i = lines.size(); i > 0; --i)
 	{
 		for (size_t j = 0; j < lines[i - 1].length(); ++j)
@@ -84,49 +84,39 @@ std::vector<std::stack<char>>	parse_stacks(std::ifstream& input)
 	return (stacks);
 }
 
-std::vector<Instruction>	parse_instructions(std::ifstream& input, std::vector<std::stack<char>>& stacks)
+std::vector<Instruction> parse_instructions(std::istream& stream, std::vector<std::stack<char>>& stacks)
 {
-	constexpr const char* nb = {"0123456789"};
-	std::vector<Instruction>	instructions;
-
-	while (!input.eof())
+	std::vector<Instruction> instructions;
+	while (!stream.eof())
 	{
-		std::string line;
-		std::getline(input, line);
-		if (line.length() == 0)
-			continue ;
-		
-		size_t i = 0;
-		int	amount	= std::stoi(line.substr(i = line.find_first_of(nb)));
-		int from	= std::stoi(line.substr(i = line.find_first_of(nb, line.find_first_not_of(nb, i))));
-		int to		= std::stoi(line.substr(i = line.find_first_of(nb, line.find_first_not_of(nb, i))));
-		instructions.push_back( Instruction(amount, stacks[from - 1], stacks[to - 1]) );
+		size_t amount, from, to;
+		stream >> getn >> amount >> getn >> from >> getn >> to;
+		instructions.emplace_back(amount, stacks[from - 1], stacks[to - 1]);
 	}
 	return (instructions);
 }
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
 	std::vector<std::stack<char>> stacks = parse_stacks(file);
 	std::vector<Instruction> instructions = parse_instructions(file, stacks);
 
-	//	Iterative:
+	//	Iterative (part 1):
 	// for (auto& i : instructions)
 	// 	i.execute_iterative();
 
-	//	Recursive:
+	//	Recursive (part 2):
 	for (auto& i : instructions)
 		i.execute_recursive();
 
+	std::cout << "Stack tops: ";
 	for (auto& s : stacks)
 		std::cout << s.top();
 	std::cout << std::endl;

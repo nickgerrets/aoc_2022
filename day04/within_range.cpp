@@ -52,7 +52,7 @@ std::vector<range_pair_t> parse_pairs(std::istream& stream)
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc < 2)
 		return (EXIT_FAILURE);
 	
 	std::ifstream file(argv[1]);
