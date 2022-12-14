@@ -2,21 +2,11 @@
 #include <fstream>
 #include <deque>
 
-template<typename ItInput>
-ItInput	first_not_unique(ItInput begin, ItInput end)
-{
-	for (ItInput it1 = begin; it1 != end; ++it1)
-	{
-		for (ItInput it2 = it1 + 1; it2 != end; ++it2)
-		{
-			if (*it1 == *it2)
-				return (it2);
-		}
-	}
-	return (end);
-}
+#include "../include/common.h"
 
-size_t	find_marker(std::ifstream& stream, size_t marker_size)
+using namespace aoc;
+
+size_t find_marker(std::istream& stream, size_t marker_size)
 {
 	std::deque<char> deque;
 
@@ -36,12 +26,10 @@ size_t	find_marker(std::ifstream& stream, size_t marker_size)
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 

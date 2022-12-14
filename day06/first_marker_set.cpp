@@ -2,7 +2,7 @@
 #include <fstream>
 #include <set>
 
-size_t	find_marker(std::ifstream& stream, size_t marker_size)
+size_t find_marker(std::ifstream& stream, size_t marker_size)
 {
 	std::string line;
 	std::getline(stream, line);
@@ -18,12 +18,10 @@ size_t	find_marker(std::ifstream& stream, size_t marker_size)
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
