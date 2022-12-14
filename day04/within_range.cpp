@@ -1,53 +1,51 @@
+#include "../include/common.h"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
-//	I know I can use std::pair
-template<typename T>
-struct Pair
-{
-	T	left;
-	T	right;
-};
+using namespace aoc;
 
 template<typename T>
 class Range
 {
 	public:
-	T	bound_lower;
-	T	bound_higher;
+	Range(T const& lower, T const& higher)
+	: bound_lower(lower), bound_higher(higher) {}
 
-	bool	fully_contains(const Range& r) const
+	bool contains(const Range& r) const
 	{
 		return (bound_lower <= r.bound_lower && bound_higher >= r.bound_higher);
 	}
 
-	bool	overlaps(const Range& r) const
+	bool overlaps(const Range& r) const
 	{
 		return ((r.bound_lower >= bound_lower && r.bound_lower <= bound_higher)
 			|| (r.bound_higher >= bound_lower && r.bound_higher <= bound_higher));
 	}
+
+	private:
+	T	bound_lower;
+	T	bound_higher;
 };
 
-std::vector<Pair<Range<int>>>	parse_pairs(std::ifstream& input)
+using range_pair_t = std::pair<Range<int>, Range<int>>;
+std::vector<range_pair_t> parse_pairs(std::istream& stream)
 {
-	std::vector<Pair<Range<int>>>	pairs;
-
-	while (!input.eof())
+	std::vector<range_pair_t> pairs;
+	for (std::string line; std::getline(stream, line); )
 	{
-		std::string line;
-		std::getline(input, line);
-		if (line.length() == 0)
-			break ;
-		std::string left = line.substr(0, line.find(','));
-		std::string right = line.substr(line.find(',') + 1, line.length());
-
-		Pair<Range<int>>	p;
-		p.left.bound_lower = std::stoi(left.substr(0, left.find('-')));
-		p.left.bound_higher = std::stoi(left.substr(left.find('-') + 1, left.length()));
-		p.right.bound_lower = std::stoi(right.substr(0, right.find('-')));
-		p.right.bound_higher = std::stoi(right.substr(right.find('-') + 1, right.length()));
-		pairs.push_back(p);
+		int v[4] {0};
+		std::stringstream ss(line);
+		ss	>> getn >> v[0]
+			>> getn >> v[1]
+			>> getn >> v[2]
+			>> getn >> v[3];
+		pairs.emplace_back( range_pair_t {
+			Range<int>(v[0], v[1]),
+			Range<int>(v[2], v[3])
+		});
 	}
 	return (pairs);
 }
@@ -57,21 +55,20 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
-	//	A vector of pairs of ranges of ints :)
-	std::vector<Pair<Range<int>>> pairs = parse_pairs(file);
-	int	total_contained = 0;
-	int total_overlap = 0;
+	//	Parsing
+	std::vector<range_pair_t> pairs = parse_pairs(file);
+
+	size_t total_contained = 0;
+	size_t total_overlap = 0;
 	for (auto& r : pairs)
 	{
-		if (r.left.fully_contains(r.right) || r.right.fully_contains(r.left))
+		if (r.first.contains(r.second) || r.second.contains(r.first))
 			total_contained++;
-		if (r.left.overlaps(r.right) || r.right.overlaps(r.left))
+		if (r.first.overlaps(r.second) || r.second.overlaps(r.first))
 			total_overlap++;
 	}
 
