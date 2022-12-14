@@ -18,6 +18,12 @@ std::istream& getn(std::istream& in)
 	return (in);
 }
 
+//	skips until (and including) next newline
+std::istream& skipl(std::istream& in)
+{
+	return (in.ignore(std::numeric_limits<std::streamsize>::max(), '\n'));
+}
+
 //	returns iterator to the first element thats not unique
 template<typename ItInput>
 ItInput	first_not_unique(ItInput begin, ItInput end)

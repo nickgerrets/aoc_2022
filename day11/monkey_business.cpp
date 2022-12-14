@@ -2,6 +2,11 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <sstream>
+
+#include "../include/common.h"
+
+using namespace aoc;
 
 #define DIGIT "0123456789"
 
@@ -59,8 +64,9 @@ class Monkey
 
 };
 
-Operation parse_operation(std::string const& line)
+Operation parse_operation(std::istream& stream)
 {
+	std::string line; std::getline(stream, line);
 	std::string sub = line.substr(line.find("old") + 4);
 
 	Operation::OperationType type = Operation::MULTIPLY;
@@ -72,26 +78,21 @@ Operation parse_operation(std::string const& line)
 	long value = 0;
 	if (type == Operation::ADD || type == Operation::MULTIPLY)
 		value = std::stoi(sub.substr(sub.find_first_of(DIGIT)));
-
 	return ( Operation(type, value) );
 }
 
 //	Need longs because otherwise the 10000 rounds version overflows
-std::vector<long> parse_items(std::string const& line)
+std::vector<long> parse_items(std::istream& stream)
 {
-	std::vector<long> items;
-	std::string sub = line.substr(line.find_first_of(DIGIT));
+	std::string line; std::getline(stream, line);
+	std::stringstream ss(line);
 
-	size_t i = 0;
-	size_t j = 0;
-	while (i < sub.length())
+	std::vector<long> items;
+	while (!ss.eof())
 	{
-		j = sub.find_first_of(',', i);
-		if (j == std::string::npos)
-			j = sub.length();
-		items.push_back(std::stol(sub.substr(i, j - i)));
-		j++;
-		i = j;
+		long v;
+		ss >> getn >> v;
+		items.push_back(v);
 	}
 	return (items);
 }
@@ -99,29 +100,20 @@ std::vector<long> parse_items(std::string const& line)
 std::vector<Monkey> parse_monkeys(std::ifstream& stream)
 {
 	std::vector<Monkey> monkeys;
-
-	Monkey monkey;
-	while (!stream.eof())
+	while(!stream.eof())
 	{
-		std::string line;
-		std::getline(stream, line);
-		if (line.length() == 0)
-		{
-			monkeys.push_back(monkey);
-			monkey = Monkey();
-		}
-		if (line.find("items") != line.npos)
-			monkey.items = parse_items(line);
-		else if (line.find("Operation") != line.npos)
-			monkey.operation = parse_operation(line);
-		else if (line.find("Test") != line.npos)
-			monkey.divisible_by = std::stoi(line.substr(line.find_first_of(DIGIT)));
-		else if (line.find("true") != line.npos)
-			monkey.on_true = std::stoi(line.substr(line.find_first_of(DIGIT)));
-		else if (line.find("false") != line.npos)
-			monkey.on_false = std::stoi(line.substr(line.find_first_of(DIGIT)));
+		Monkey m;
+		stream >> skipl;
+		m.items = parse_items(stream);
+		m.operation = parse_operation(stream);
+		stream	>> getn >> m.divisible_by
+				>> getn >> m.on_true
+				>> getn >> m.on_false
+				>> skipl >> skipl;
+
+		monkeys.push_back(m);
 	}
-	monkeys.push_back(monkey);
+
 	return (monkeys);
 }
 
@@ -142,9 +134,7 @@ int	main(int argc, char **argv)
 	if (argc < 2)
 		return (EXIT_FAILURE);
 	
-	std::ifstream	file;
-	file.open(argv[1]);
-
+	std::ifstream file(argv[1]);
 	if (!file)
 		return (EXIT_FAILURE);
 
