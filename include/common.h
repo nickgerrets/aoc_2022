@@ -2,6 +2,7 @@
 # define COMMON_H
 
 # include <istream>
+# include <limits>
 
 # define SIGN(x) (x > 0) - (x < 0)
 
@@ -13,7 +14,7 @@ std::istream& getn(std::istream& in)
 {
 	char c;
 	while (in && (c = (in >> std::ws).peek()) != EOF
-		&& !(c >= '0' && c <= '9'))
+		&& !(c >= '0' && c <= '9') && c != '-')
 		in.ignore();
 	return (in);
 }
